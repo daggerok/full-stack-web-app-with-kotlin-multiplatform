@@ -1,13 +1,13 @@
 name: CI
 on:
   push:
+  #pull_request: [ master ]
   workflow_dispatch:
     inputs:
       trigger:
         description: Type m to triggre manual jobs
         required: false
         default: ''
-  #pull_request: [ master ]
 jobs:
   tests:
     name: tests java-${{ matrix.java }}
@@ -36,5 +36,12 @@ jobs:
             !~/.m2/repository/com/gituhb/daggerok
           key: ${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/pom.xml') }}
       - uses: actions/setup-node@v3
+      - run: sudo apt-get install -qqy httpie
       - run: cd $GITHUB_WORKSPACE ; ./gradlew --no-daemon --no-build-cache --console=plain --warning-mode=summary clean build
-      - run: cd $GITHUB_WORKSPACE ; ./gradlew --no-daemon --no-build-cache --console=plain --warning-mode=summary run
+      - run: unzip -d $GITHUB_WORKSPACE/build/app $GITHUB_WORKSPACE/build/distributions/*.zip
+      #- run: dirs=($GITHUB_WORKSPACE/build/app/*/)
+      #- run: for dir in "${dirs[@]}" ; do bash "$GITHUB_WORKSPACE/build/app/$dir/bin/shoppinglist" & ; done
+      - run: bash $GITHUB_WORKSPACE/build/app/*/bin/shoppinglist &
+      - run: npm_config_yes=true npx wait-port 9090
+      - run: http --ignore-stdin get :9090
+      - run: killall -9 java

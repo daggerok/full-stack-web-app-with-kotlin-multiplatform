@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.npm.buildNpmVersion
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
+import org.jetbrains.kotlin.gradle.targets.js.yarn.yarn
 
 val kotlinVersion = "1.6.10"
 val serializationVersion = "1.3.2"
@@ -18,6 +20,12 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+}
+
+plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
+        nodeVersion = "16.15.1"
+    }
 }
 
 kotlin {
