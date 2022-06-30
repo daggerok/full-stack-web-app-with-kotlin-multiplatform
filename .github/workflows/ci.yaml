@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      trigger:
+        description: Type m to triggre manual jobs
+        required: false
+        default: ''
+  #pull_request: [ master ]
+jobs:
+  tests:
+    name: tests java-${{ matrix.java }}
+    if: github.event.inputs.trigger == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        java: [ 8, 11, 17, 18 ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+      - uses: actions/cache@v3
+        id: ci
+        with:
+          path: |
+            ~/.npm
+            ~/.node
+            ~/.local
+            ~/.gradle
+            ~/.docker
+            ~/.m2/repository
+            !~/.m2/repository/com/gituhb/daggerok
+          key: ${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/pom.xml') }}
+      - uses: actions/setup-node@v3
+      - run: cd $GITHUB_WORKSPACE ; ./gradlew --no-daemon --no-build-cache --console=plain --warning-mode=summary clean build
+      - run: cd $GITHUB_WORKSPACE ; ./gradlew --no-daemon --no-build-cache --console=plain --warning-mode=summary run
